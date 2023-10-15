@@ -1,5 +1,6 @@
-PYTHON_VER			:= 3.11.5
-VENV				:= $(PYTHON_VER)-template
+PYTHON_VER			:= 3.11.6
+VENV				:= $(PYTHON_VER)-pyawswrapper
+S3_TEST_BUCKET		:= localstack-bucket
 
 test_all:
 	@if [ -e htmlcov ]; then\
@@ -14,6 +15,24 @@ test: __require_target__
 	( \
 		export SQLALCHEMY_WARN_20=1 && \
 		pytest -v $(TARGET) --cov --cov-report=xml --cov-report=html --junitxml=xunit-result.xml \
+	)
+
+env/localstack: env/localstack/start sleep env/localstack/init
+
+env/localstack/install:
+	( \
+		pip install localstack \
+	)
+
+env/localstack/start:
+	( \
+		SERVICES=s3 DEBUG=1 localstack start -d && \
+		localstack status services \
+	)
+
+env/localstack/init:
+	( \
+		awslocal s3 mb s3://$(S3_TEST_BUCKET) \
 	)
 
 env/init: virtualenv/install python/requirements
@@ -66,6 +85,9 @@ python/requirements:
 		. ~/.pyenv/versions/$(VENV)/bin/activate && \
 		pip freeze \
 	)
+
+sleep:
+	sleep 20
 
 __require_target__:
 	@[ -n "$(TARGET)" ] || (echo "[ERROR] Parameter [TARGET] is requierd" 1>&2 && echo "(e.g) make xxx TARGET=..." 1>&2 && exit 1)

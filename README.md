@@ -1,2 +1,3 @@
-# python_package
-My template repository for Python packages
+# pyawswrapper
+
+A simple AWS services wrapper for Python project.

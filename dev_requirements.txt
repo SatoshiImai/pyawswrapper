@@ -8,3 +8,6 @@ ipykernel
 pylint
 flake8
 check-manifest
+awscli-local
+localstack
+moto[athena]
