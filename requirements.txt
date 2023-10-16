@@ -1,0 +1,4 @@
+boto3
+pandas
+pycodehelper @ git+https://github.com/SatoshiImai/pycodehelper@master
+pyshellutil @ git+https://github.com/SatoshiImai/pyshellutil@master
