@@ -2,7 +2,7 @@
 # ---------------------------------------------------------------------------
 # author = 'Satoshi Imai'
 # credits = ['Satoshi Imai']
-# version = '0.9.0'
+# version = '0.9.1'
 # ---------------------------------------------------------------------------
 
 import copy
@@ -308,6 +308,19 @@ def test_run_query(tempdir: Path, test_df: pd.DataFrame, logger: Logger):
 
     sub_df = result_df - test_df
     assert sub_df.values.sum() == 0
+
+    with patch.object(boto3, 'Session', return_value=mock_session):
+        with patch.object(boto3.session, 'Session', return_value=localstack_session):
+            result_df_2 = my_athena.run_query(
+                'SELECT dummy', dtype=type_def, chunksize=1)
+            # end with
+        # end with
+
+    chunk_count = 0
+    for _ in result_df_2:
+        chunk_count += 1
+        # end for
+    assert chunk_count == 3
     # end def
 
 

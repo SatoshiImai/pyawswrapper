@@ -2,7 +2,7 @@
 # ---------------------------------------------------------------------------
 # __author__ = 'Satoshi Imai'
 # __credits__ = ['Satoshi Imai']
-# __version__ = "0.9.0"
+# __version__ = "0.9.1"
 # ---------------------------------------------------------------------------
 
 import json
@@ -204,26 +204,30 @@ class AthenaClient(object):
                   query: str,
                   database: str = None,
                   dtype: Dict = None,
-                  return_path: bool = False) -> Union[pd.DataFrame, str]:
+                  return_path: bool = False,
+                  **kwargs: Any) -> Union[pd.DataFrame, str]:
 
         return self.__execute([query],
                               database=database,
                               is_data_query=True,
                               dtypes=[dtype],
-                              return_paths=return_path)[0]
+                              return_paths=return_path,
+                              **kwargs)[0]
         # end def
 
     def run_queries(self,
                     queries: List[str],
                     database: str = None,
                     dtypes: List[Dict] = None,
-                    return_paths: bool = False) -> List[Union[pd.DataFrame, str]]:
+                    return_paths: bool = False,
+                    **kwargs: Any) -> List[Union[pd.DataFrame, str]]:
 
         return self.__execute(queries,
                               database=database,
                               is_data_query=True,
                               dtypes=dtypes,
-                              return_paths=return_paths)
+                              return_paths=return_paths,
+                              **kwargs)
         # end def
 
     def run_nonquery(self,
@@ -249,7 +253,8 @@ class AthenaClient(object):
                   database: str,
                   is_data_query: bool = True,
                   dtypes: List[Dict] = None,
-                  return_paths: bool = False) -> List[Any]:
+                  return_paths: bool = False,
+                  **kwargs: Any) -> List[Any]:
 
         if database is None:
             database = self.database
@@ -278,15 +283,15 @@ class AthenaClient(object):
             # end if
 
         for index in range(len(queries)):
-            kwargs = {}
+            additional_args = {}
             if self.__workgroup is not None:
-                kwargs['WorkGroup'] = self.__workgroup
+                additional_args['WorkGroup'] = self.__workgroup
                 # end if
             responses[index] = my_client.start_query_execution(
                 QueryString=queries[index],
                 QueryExecutionContext={'Database': database},
                 ResultConfiguration={'OutputLocation': output_to},
-                **kwargs
+                **additional_args
             )
             self.logger.info(
                 json.dumps(
@@ -315,8 +320,8 @@ class AthenaClient(object):
                             if return_paths:
                                 results[index] = query_output_path
                             else:
-                                results[index] = self.__obtain_data(query_output_path,
-                                                                    dtypes[index])
+                                results[index] = self.__obtain_data(
+                                    query_output_path, dtypes[index], **kwargs)
                                 # end if
                         else:
                             # non-query
@@ -365,7 +370,8 @@ class AthenaClient(object):
 
     def __obtain_data(self,
                       output_to: str,
-                      dtype: Dict = None) -> pd.DataFrame:
+                      dtype: Dict = None,
+                      **kwargs: Any) -> pd.DataFrame:
 
         my_session = boto3.session.Session(
             region_name=self.region,
@@ -379,8 +385,7 @@ class AthenaClient(object):
         bucket = s3path.bucket_name(output_to)
         key = '/'.join(s3path.to_list(output_to)[1:])
         obj = my_client.get_object(Bucket=bucket, Key=key)
-        result = pd.read_csv(obj['Body'],
-                             dtype=dtype)
+        result = pd.read_csv(obj['Body'], dtype=dtype, **kwargs)
         return result
         # end def
 
