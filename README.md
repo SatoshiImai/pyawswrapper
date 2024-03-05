@@ -60,6 +60,12 @@ result_df = my_athena.run_query(
     dtype=type_def)
 ```
 
+## Change log
+
+### 0.9.1
+
+* `athenaclient.run_query` and `athenaclient.run_queries` support `**kwargs` parameter that is passed to read_csv.
+
 ## LICENSE
 
 I inherited BSD 3-Clause License from [pandas](https://pypi.org/project/pandas/)

@@ -10,4 +10,4 @@ flake8
 check-manifest
 awscli-local
 localstack
-moto[athena]
+moto[athena]<5.0.0
